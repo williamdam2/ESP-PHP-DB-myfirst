@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta  name="description" content="DieuKhienVaGiamSat"/>
+<meta  name="author" content="Dam Dat"/>
+<meta  name="keyword"/>
+<html>
+<head>
+	<script src="https://code.highcharts.com/highcharts.js"></script>
+	<style type="text/css">
+		.button{
+			height: 100px;
+			width: 250px;
+		}
+	</style>
+	<title>
+	Điều khiển và đọc Analog	
+	</title>
+</head>
+<body>
+	<h1 style="color:blue;font-family:Times New Roman">Giá Trị Analog</h1>
+	<div id="bg" style="width:50%;height: 30px ;background:gray">
+		<div id="val" style="width: 25% ;height: 30px ; background:#E4D12A">
+			<div id ="valdigit" value="number">Percent</div>
+		</div>
+	</div>
+	<br>
+	<br>
+	<h1 style="color:blue;font-family:Times New Roman">Bật Tắt LED Trên Broad</h1>
+	<button class="button" onclick="turnOn()">On</button>
+	<button class="button" onclick="turnOff()">OFF</button>
+	<br>
+	<br>
+	<div id="graph-analog" class="graph"></div>
+	</body>
+<script>
+	var chartT = new Highcharts.Chart({
+  chart:{ renderTo : 'graph-analog' },
+  title: { text: 'Giá trị ADC ' },
+  series: [{
+    showInLegend: false,
+    data: []
+  }],
+  plotOptions: {
+    line: { animation: false,
+      dataLabels: { enabled: true }
+    },
+    series: { color: '#059e8a' }
+  },
+  xAxis: { type: 'datetime',
+    dateTimeLabelFormats: { second: '%H:%M:%S' }
+  },
+  yAxis: {
+    title: { text: 'ADC' }
+    //title: { text: 'Temperature (Fahrenheit)' }
+  },
+  credits: { enabled: false }
+});
+	setInterval(function ( ) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      var x = (new Date()).getTime(),
+          y = parseFloat(this.responseText);
+      //console.log(this.responseText);
+      if(chartT.series[0].data.length > 40) {
+        chartT.series[0].addPoint([x, y], true, true, true);
+      } else {
+        chartT.series[0].addPoint([x, y], true, false, true);
+      }
+    }
+  };
+  xhttp.open("GET", "/A0", true);
+  xhttp.send();
+}, 5000 ) ;
+
+</script>
+
+<script>
+	function load(){
+		alert("Điều khiển thiết bị và giám sát");
+		setInterval(timer,250);
+	}
+	function timer(){
+		//code
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open("GET","/A0",true);
+		xmlhttp.send();
+		xmlhttp.onreadystatechange =function(){
+			if(this.readyState == 4 && this.status == 200)
+			{
+				document.getElementById('val').style.width= (parseFloat(xmlhttp.responseText)/10.24).toFixed(1)+'%';
+				document.getElementById('val').textContent= (parseFloat(xmlhttp.responseText)/10.24).toFixed(1)+ '%';
+	      	}
+		}
+	}
+	function turnOn(){
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open("GET","/ON",true);
+		xmlhttp.send();
+	}
+	function turnOff(){
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.open("GET","/OFF",true);
+		xmlhttp.send();
+	}
+    
+
+	window.onload = load;
+	
+	
+</script>
+</html>
